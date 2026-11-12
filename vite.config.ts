@@ -87,20 +87,28 @@ function deferredBootAndHeaders(env: Record<string, string>): Plugin {
     },
     transformIndexHtml: {
       order: "post",
-      handler(html) {
+      handler(html, ctx) {
         // Dev server: keep Vite's normal module loading, just inline the theme script.
         const main = /<script type="module" crossorigin src="([^"]+)"><\/script>\s*/.exec(html);
         if (!main) {
           return html.replace(THEME_PLACEHOLDER, `<script>${themeScript}</script>`);
         }
+        // Start the app once the first text has painted (the prerendered page is
+        // already readable), with a timeout for browsers without paint timing.
         const loader =
           `(function(){var s=document.createElement("script");s.type="module";s.src=${JSON.stringify(main[1])};` +
           `var d=0,go=function(){if(!d++)document.head.appendChild(s)};` +
-          `requestAnimationFrame(function(){setTimeout(go,0)});setTimeout(go,500)})()`;
+          `try{new PerformanceObserver(function(l){if(l.getEntriesByName("first-contentful-paint").length)setTimeout(go,0)})` +
+          `.observe({type:"paint",buffered:true})}catch(e){}setTimeout(go,1500)})()`;
+        // Fetch the two fonts the first screen needs alongside the CSS, not after it.
+        const fonts = Object.keys(ctx.bundle ?? {})
+          .filter((f) => /assets\/(fraunces-latin-soft-normal|ibm-plex-sans-latin-400-normal)-[^/]+\.woff2$/.test(f))
+          .map((f) => `<link rel="preload" href="/${f}" as="font" type="font/woff2" crossorigin>`)
+          .join("\n    ");
         return html
           .replace(main[0], "")
           .replace(/<link rel="modulepreload"[^>]*>\s*/g, "")
-          .replace(THEME_PLACEHOLDER, `<script>${themeScript};${loader}</script>`);
+          .replace(THEME_PLACEHOLDER, `${fonts}\n    <script>${themeScript};${loader}</script>`);
       },
     },
     writeBundle() {
