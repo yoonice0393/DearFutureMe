@@ -4,7 +4,7 @@ Three parts, all on free plans:
 
 | Part | Where | How it deploys |
 |---|---|---|
-| Website (`dist/`) | Cloudflare Workers (static assets) | Automatically on every push to `main` on GitHub |
+| Website (`dist/`) | Cloudflare Pages: https://dearfutureme.pages.dev | Automatically on every push to `main` on GitHub |
 | Database, Edge Functions, cron | Supabase | From this machine with the Supabase CLI |
 | Email | Brevo (Resend optional) | API key stored as a Supabase secret |
 
@@ -67,17 +67,20 @@ update public.profiles set role = 'admin' where email = 'you@example.com';
 
 ---
 
-## 2. Cloudflare (website)
+## 2. Cloudflare Pages (website)
 
-The site is a **Cloudflare Worker with static assets**: no server code, it just serves `dist/`. `wrangler.jsonc` in the repo configures it, so wrangler never auto-configures the project. (A classic Pages project also works with the same build. Use output directory `dist`.)
+The site is a static **Cloudflare Pages** project: no server code, it just serves `dist/`.
 
-1. Cloudflare dashboard → **Workers & Pages → Create → Workers → Import a repository**.
+> Choose **Pages**, not Workers. Cloudflare's **Create** button now defaults to a Worker, which runs `wrangler deploy` after the build and tries to auto-configure the project. That breaks the prerender step.
+
+1. Cloudflare dashboard → **Workers & Pages → Create → Pages** tab → **Import an existing Git repository** (Connect to Git).
 2. Authorise GitHub and pick the `DearFutureMe` repository.
 3. Build settings:
    - Production branch: `main`
+   - Framework preset: **None**
    - Build command: `npm run build`
-   - Deploy command: `npx wrangler deploy`
-4. **Build variables** (Settings → Build → *Variables and secrets*). They must be *build* variables, because Vite bakes them in at build time:
+   - Build output directory: `dist`
+4. **Environment variables** (Production, and Preview if you use preview links). Vite bakes them in at build time:
 
    | Name | Value |
    |---|---|
@@ -88,15 +91,17 @@ The site is a **Cloudflare Worker with static assets**: no server code, it just 
    | `VITE_CONTACT_EMAIL` | the public contact address shown in the footer |
 
    These are public values, baked into the JavaScript at build time. **Never** put a service key, `LETTER_KEY` or the Brevo key here.
-5. **Deploy.** Your site is `https://dearfutureme.<your-subdomain>.workers.dev` (shown on the Worker's overview page). Use that exact address everywhere below.
+5. **Save and Deploy.** The site is `https://dearfutureme.pages.dev`. If the name is ever taken, Cloudflare adds a suffix, so use the real address everywhere below. Changing an environment variable only takes effect after a new deployment (**Deployments → … → Retry deployment**, or push a commit).
 
-The build writes `dist/_headers` (CSP, HSTS and the other headers) and prerenders the static pages. Cloudflare serves `/about` from `about.html` and every unknown path from `index.html`, so client-side routing works. Every push to `main` redeploys.
+The build writes `dist/_headers` (CSP, HSTS and the other headers) and prerenders the static pages. Pages serves `/about` from `about.html` and every unknown path from `index.html` (its single-page-app fallback), so client-side routing works. Every push to `main` redeploys, and other branches get preview links like `https://<branch>.dearfutureme.pages.dev`.
+
+**Rolling back:** go to **Deployments**, pick an earlier one, then **Rollback to this deployment**.
 
 ### After the first deploy
 
-- [ ] Add the site address to the Supabase secret `SITE_ORIGINS` (first in the list), then run `npx supabase secrets set --env-file supabase/.env.secrets`.
-- [ ] Supabase Auth Site URL and Redirect URLs point at the site address.
-- [ ] Turnstile widget hostnames include the site address (`dearfutureme.<subdomain>.workers.dev`).
+- [x] `SITE_ORIGINS` starts with `https://dearfutureme.pages.dev` (set; re-run `npx supabase secrets set --env-file supabase/.env.secrets` if the address ever changes).
+- [ ] Supabase Auth Site URL and Redirect URLs point at `https://dearfutureme.pages.dev`.
+- [ ] Turnstile widget hostnames include `dearfutureme.pages.dev`.
 - [ ] Open `/booth/setup` on the real site and register a test device, then check `/booth`, `/booth/qr` and a phone scan.
 - [ ] Write a web letter to yourself, confirm it, and check the receipt's links (manage, "This wasn't me").
 - [ ] Response headers: `curl -sI https://<site>/ | findstr /i "content-security strict-transport"`.
@@ -129,13 +134,13 @@ gpg -d backup.sql.gz.gpg | gunzip | psql "<connection string>"
 
 ## 4. Custom domain (later)
 
-1. Buy a domain (about ₱500–700/year). Add it in **Cloudflare Pages → Custom domains** and follow the DNS prompts (instant if the domain uses Cloudflare DNS).
+1. Buy a domain (about ₱500–700/year). In **Cloudflare Pages → your project → Custom domains → Set up a domain**, enter it and follow the DNS prompts (instant if the domain uses Cloudflare DNS).
 2. Replace `dearfutureme.pages.dev` everywhere above: `SITE_ORIGINS`, Supabase Auth URLs, Turnstile hostnames.
 3. **Email from your domain** (fixes Gmail spam and Yahoo rejections):
    - Brevo → Senders, Domains → **Add domain**, then add the DNS records it lists: Brevo code (TXT), **DKIM** (CNAME/TXT), and **DMARC**, for example `v=DMARC1; p=none; rua=mailto:you@yourdomain`.
    - If you also use another sender, merge the SPF records into **one** `v=spf1 … ~all` TXT record.
    - Verify in Brevo, then change `MAIL_FROM_EMAIL` to an address on the domain, for example `letters@yourdomain`.
-4. Update the contact email (`VITE_CONTACT_EMAIL`) and redeploy.
+4. Update the contact email (`VITE_CONTACT_EMAIL`) in Pages' environment variables and redeploy.
 
 ---
 
