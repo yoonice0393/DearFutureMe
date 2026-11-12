@@ -84,3 +84,27 @@ export const eventStatus = (eventCode: string) =>
     "event-status",
     { eventCode },
   );
+
+// ── Email links ──────────────────────────────────────────────────────────────
+
+export const verifyEmail = (token: string) =>
+  call<{ status: string; deliverAt: string; already: boolean }>("verify", { token });
+
+export type ManageView =
+  | { kind: "unsubscribe" }
+  | { kind: "letter"; exists: false }
+  | {
+      kind: "letter";
+      exists: true;
+      status: string;
+      deliverAt: string;
+      writtenAt: string;
+      email: string;
+      eventName: string | null;
+      devSendNow: boolean;
+    };
+
+export const manageView = (token: string) => call<ManageView>("manage", { token, action: "view" });
+
+export const manageAction = (token: string, action: "cancel" | "not-me" | "unsubscribe" | "send-now") =>
+  call<{ done: boolean; removed?: number; status?: string; error?: string | null }>("manage", { token, action });

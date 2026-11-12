@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(20);
 
 -- ── Fixtures (as the migration owner) ───────────────────────────────────────
 insert into auth.users (id, email, aud, role)
@@ -67,7 +67,8 @@ select throws_ok(
 );
 select throws_ok($$ select * from public.events $$,              '42501', null, 'events are hidden from users');
 select throws_ok($$ select * from public.kiosks $$,              '42501', null, 'kiosks are hidden from users');
-select throws_ok($$ select * from public.email_verifications $$, '42501', null, 'verification tokens are hidden from users');
+select throws_ok($$ select * from public.email_outbox $$,       '42501', null, 'the email queue is hidden from users');
+select throws_ok($$ select * from public.daily_quota $$,        '42501', null, 'send quotas are hidden from users');
 select throws_ok($$ select * from public.suppressed_emails $$,   '42501', null, 'suppression list is hidden from users');
 select throws_ok(
   $$ select public.create_letter(gen_random_uuid(), null, 'x@test.invalid', 'h', 'web', null, null, false,

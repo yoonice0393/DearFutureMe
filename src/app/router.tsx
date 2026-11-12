@@ -13,6 +13,8 @@ import { Cookies } from "@/pages/legal/Cookies";
 import { NotFound } from "@/pages/NotFound";
 import { SignIn } from "@/pages/SignIn";
 import { Dashboard } from "@/pages/Dashboard";
+import { Verify } from "@/pages/Verify";
+import { Manage } from "@/pages/Manage";
 import { BoothSetup } from "@/pages/booth/BoothSetup";
 import { BoothQr } from "@/pages/booth/BoothQr";
 import { ServerDraftSync } from "@/features/draft/ServerDraftSync";
@@ -53,6 +55,8 @@ export const router = createBrowserRouter([
       },
       { path: "signin", element: <SignIn /> },
       { path: "dashboard", element: <Dashboard /> },
+      { path: "verify", element: <Verify /> },
+      { path: "manage/:token", element: <Manage /> },
       { path: "*", element: <NotFound /> },
     ],
   },

@@ -455,3 +455,19 @@ import_map = "./functions/import_map.json"
 [functions.health]
 verify_jwt = false
 import_map = "./functions/import_map.json"
+
+[functions.dispatch]
+verify_jwt = false
+import_map = "./functions/import_map.json"
+
+[functions.verify]
+verify_jwt = false
+import_map = "./functions/import_map.json"
+
+[functions.manage]
+verify_jwt = false
+import_map = "./functions/import_map.json"
+
+[functions.unsubscribe]
+verify_jwt = false
+import_map = "./functions/import_map.json"

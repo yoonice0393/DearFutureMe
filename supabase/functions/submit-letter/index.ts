@@ -16,7 +16,8 @@ import { db, eventIsLive, getUser, lookupKiosk, rateLimit } from "../_shared/db.
 import { toPgBytea } from "../_shared/encoding.ts";
 import { keys } from "../_shared/env.ts";
 import { HttpError, clientIp, log, maskEmail, serve } from "../_shared/http.ts";
-import { emailHash, parseEventCode, randomToken, sha256Hex } from "../_shared/tokens.ts";
+import { emailHash, parseEventCode } from "../_shared/tokens.ts";
+import { processOutbox } from "../_shared/delivery.ts";
 import { verifyTurnstile } from "../_shared/turnstile.ts";
 
 const ERRORS: Record<string, [number, string, string?]> = {
@@ -114,23 +115,26 @@ serve("submit-letter", async (req, raw) => {
     throw new HttpError(httpStatus, String(result), message, field);
   }
 
-  if (status === "pending_verification") {
-    const token = randomToken();
-    const { error: vErr } = await db().from("email_verifications").insert({
-      token_hash: await sha256Hex(token),
-      email_hash: hash,
-      letter_id: letterId,
-      expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
-    });
-    if (vErr) throw vErr;
-    // Phase 5: email the verification link (/verify?token=…) via the outbox.
-  }
   // The draft it was written from is no longer needed.
   if (userId && input.draftId) {
     await db().from("letters").delete().eq("id", input.draftId).eq("user_id", userId).eq("status", "draft");
   }
-  // Phase 5: queue the instant receipt email (with cancel / "This wasn't me" links).
 
-  log("submit-letter", "created", { source, status, keyVersion: CURRENT_KEY_VERSION, email: maskEmail(input.email) });
-  return { status, letterId, deliverAt: deliverAt.toISOString() };
+  // Queue the receipt (sealed) or the confirmation link (web, not signed in),
+  // then try to send it right away. If that fails, the 5-minute cron retries.
+  const { data: outbox, error: qErr } = await db()
+    .from("email_outbox")
+    .insert({ kind: status === "sealed" ? "receipt" : "verify", letter_id: letterId })
+    .select("id")
+    .single();
+  if (qErr) throw qErr;
+  let emailed = false;
+  try {
+    emailed = (await processOutbox({ id: outbox.id })).sent > 0;
+  } catch (err) {
+    log("submit-letter", "inline_email_failed", { message: err instanceof Error ? err.message : String(err) });
+  }
+
+  log("submit-letter", "created", { source, status, emailed, keyVersion: CURRENT_KEY_VERSION, email: maskEmail(input.email) });
+  return { status, letterId, deliverAt: deliverAt.toISOString(), emailed };
 });
