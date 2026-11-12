@@ -43,6 +43,10 @@ jobs:
             exit 1
           fi
           set -o pipefail
+          # Strings copied from Supabase's ORM tabs carry ?pgbouncer=true (and
+          # sometimes &connection_limit=…), which pg_dump rejects; and pg_dump
+          # needs the session pooler (5432), not the transaction pooler (6543).
+          DB_URL=$(printf '%s' "$DB_URL" | sed -E 's/[?&](pgbouncer|connection_limit|pool_timeout)=[^&]*//g; s/\?$//; s/(pooler\.supabase\.com):6543/\1:5432/')
           /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --no-owner --no-privileges \
             --schema=public --schema=auth \
             | gzip -9 \
