@@ -9,3 +9,4 @@ supabase/.branches/
 .DS_Store
 supabase/.env.secrets
 dist-ssr/
+supabase/.backup-passphrase.txt
