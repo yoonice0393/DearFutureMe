@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { "@": "/src" },
+    alias: { "@shared": "/supabase/functions/_shared", "@": "/src" },
   },
   build: {
     sourcemap: false,

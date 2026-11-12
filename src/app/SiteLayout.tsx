@@ -63,7 +63,7 @@ export function SiteLayout() {
           </nav>
           <div className="text-sm md:col-span-3">
             <p className="text-pencil">Questions or data requests</p>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="break-all">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="[overflow-wrap:anywhere]">
               {CONTACT_EMAIL}
             </a>
           </div>

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "goals",
+    "title": "Goals",
+    "blurb": "What you're working toward, and how you'll know you got there.",
+    "body": "Dear future me,\n\nRight now I'm working toward…\n\nThe goal I'm scared to say out loud is…\n\nBy the time you read this, I hope you've…\n\nIf you didn't get there, that's okay, because…\n\n— me"
+  },
+  {
+    "id": "gratitude",
+    "title": "Gratitude",
+    "blurb": "The people and small things you don't want to forget.",
+    "body": "Dear future me,\n\nThese days I'm grateful for…\n\nThe person who made this year easier is…\n\nA small thing that made me happy this week was…\n\nI hope you still have…\n\n— me"
+  },
+  {
+    "id": "advice",
+    "title": "Advice to myself",
+    "blurb": "What you already know and keep forgetting.",
+    "body": "Dear future me,\n\nHere's what I want you to remember…\n\nIf things went badly, please…\n\nIf things went well, don't forget…\n\nBe gentler with yourself about…\n\n— me"
+  },
+  {
+    "id": "snapshot",
+    "title": "Current life snapshot",
+    "blurb": "A time capsule of an ordinary day right now.",
+    "body": "Dear future me,\n\nA normal day right now looks like…\n\nI'm listening to…\n\nMy usual coffee costs…\n\nEveryone around me is talking about…\n\nMy room looks like…\n\n— me"
+  },
+  {
+    "id": "worries",
+    "title": "Worries I hope are gone",
+    "blurb": "Write them down so you can see how they turned out.",
+    "body": "Dear future me,\n\nRight now I'm worried about…\n\nWhat keeps me up at night is…\n\nI hope by now you've forgotten…\n\nWhatever happened, I want you to know…\n\n— me"
+  },
+  {
+    "id": "relationships",
+    "title": "Relationships",
+    "blurb": "The people in your life today.",
+    "body": "Dear future me,\n\nThe people I talk to most right now are…\n\nI miss…\n\nI hope you're still close with…\n\nA conversation I need to have is…\n\n— me"
+  },
+  {
+    "id": "career",
+    "title": "Career and school",
+    "blurb": "Where you are in school or work, and where you hope to be.",
+    "body": "Dear future me,\n\nRight now I'm studying / working on…\n\nThe hardest part of my week is…\n\nI'm nervous about…\n\nIn a few years I hope I'm…\n\n— me"
+  }
+]
