@@ -25,7 +25,7 @@ and "sealing" a letter only pretends to submit. That's useful for UI work.
 | `npm run dev` | Dev server |
 | `npm run build` | Type-check and production build into `dist/` |
 | `npm test` | Unit tests for encryption, signed tokens and letter rules |
-| `npx supabase test db --remote` | RLS tests against the linked database (rolled back) |
+| `node scripts/rls-remote.mjs` | RLS tests against the linked database, no Docker needed (always rolled back) |
 
 ## Environment variables
 
@@ -54,11 +54,11 @@ Run these in **Command Prompt** (`cmd`). PowerShell often blocks `npx` with
 cd C:\path\to\DearFutureMe
 npx supabase login
 npx supabase link --project-ref YOUR_PROJECT_REF
-npx supabase db push
+npx supabase db push --remote
 node scripts/gen-secrets.mjs
 npx supabase secrets set --env-file supabase/.env.secrets
 npx supabase functions deploy --use-api
-npx supabase test db --remote
+node scripts/rls-remote.mjs
 ```
 
 In the dashboard, under **Authentication → URL Configuration**, set the Site URL and add
