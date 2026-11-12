@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Color tokens as RGB triplets — see docs/DESIGN.md for contrast ratios. */
+@layer base {
+  :root {
+    --c-paper: 246 241 231;
+    --c-paper-deep: 237 229 211;
+    --c-sheet: 251 248 241;
+    --c-ink: 31 42 55;
+    --c-pencil: 91 100 114;
+    --c-postal: 179 38 30;
+    --c-on-postal: 255 255 255;
+    --c-stamp: 47 107 79;
+    --c-rule: 217 207 188;
+    --c-border: 138 127 106;
+    color-scheme: light;
+  }
+
+  .dark {
+    --c-paper: 20 27 38;
+    --c-paper-deep: 28 37 51;
+    --c-sheet: 26 34 48;
+    --c-ink: 239 230 210;
+    --c-pencil: 168 175 186;
+    --c-postal: 240 138 126;
+    --c-on-postal: 20 27 38;
+    --c-stamp: 124 196 160;
+    --c-rule: 42 52 68;
+    --c-border: 94 104 120;
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-paper text-ink font-sans antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-base;
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3 {
+    @apply font-serif text-ink;
+    font-variation-settings: "SOFT" 50, "WONK" 0;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    @apply text-postal underline decoration-1 underline-offset-4;
+  }
+  a:hover {
+    @apply decoration-2;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-postal));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgb(var(--c-postal) / 0.2);
+  }
+}
+
+@layer components {
+  /* Long-form copy: legal pages, about, letter preview. */
+  .prose-letter {
+    @apply max-w-prose text-base;
+  }
+  .prose-letter > * + * {
+    @apply mt-6;
+  }
+  .prose-letter h2 {
+    @apply mt-12 text-xl;
+  }
+  .prose-letter h3 {
+    @apply mt-8 text-lg;
+  }
+  .prose-letter ul {
+    @apply list-disc pl-6;
+  }
+  .prose-letter ol {
+    @apply list-decimal pl-6;
+  }
+  .prose-letter li + li {
+    @apply mt-2;
+  }
+  .prose-letter strong {
+    @apply font-semibold;
+  }
+
+  /* A sheet of letter paper with faint ruled lines. */
+  .letter-sheet {
+    @apply bg-sheet shadow-paper;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.65em - 1px),
+      rgb(var(--c-rule)) calc(1.65em - 1px),
+      rgb(var(--c-rule)) 1.65em
+    );
+    background-position: 0 0.4em;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.12em] text-pencil;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
