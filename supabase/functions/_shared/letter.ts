@@ -10,6 +10,8 @@ export const SUBJECT_MAX_CHARS = 150;
 export const EMAIL_MAX_CHARS = 254;
 export const MIN_MONTHS_AHEAD = 1;
 export const MAX_YEARS_AHEAD = 25;
+/** Letters waiting (pending or sealed) per email address. */
+export const MAX_LETTERS_PER_EMAIL = 3;
 
 /** Delivery presets in months. */
 export const DELIVERY_PRESETS = [6, 12, 24, 36, 60, 120] as const;
@@ -73,6 +75,8 @@ export const letterSubmitSchema = letterContentSchema.extend({
   kioskToken: z.string().max(128).optional(),
   eventCode: z.string().max(256).optional(),
   turnstileToken: z.string().max(4096).optional(),
+  /** Signed-in web users: the server-side draft this letter came from (deleted on success). */
+  draftId: z.uuid().optional(),
 });
 
 export type LetterSubmit = z.infer<typeof letterSubmitSchema>;

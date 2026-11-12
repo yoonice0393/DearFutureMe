@@ -11,7 +11,11 @@ import { Privacy } from "@/pages/legal/Privacy";
 import { Terms } from "@/pages/legal/Terms";
 import { Cookies } from "@/pages/legal/Cookies";
 import { NotFound } from "@/pages/NotFound";
-import { ComingSoon } from "@/pages/ComingSoon";
+import { SignIn } from "@/pages/SignIn";
+import { Dashboard } from "@/pages/Dashboard";
+import { BoothSetup } from "@/pages/booth/BoothSetup";
+import { BoothQr } from "@/pages/booth/BoothQr";
+import { ServerDraftSync } from "@/features/draft/ServerDraftSync";
 import { Booth } from "@/pages/booth/Booth";
 import { EventPage } from "@/pages/booth/EventPage";
 
@@ -19,6 +23,7 @@ import { EventPage } from "@/pages/booth/EventPage";
 function WebDraft() {
   return (
     <DraftProvider storageKey="dfm-draft">
+      <ServerDraftSync />
       <Outlet />
     </DraftProvider>
   );
@@ -27,6 +32,8 @@ function WebDraft() {
 export const router = createBrowserRouter([
   // Kiosk and event flows: their own minimal layouts, no links out.
   { path: "booth", element: <Booth /> },
+  { path: "booth/setup", element: <BoothSetup /> },
+  { path: "booth/qr", element: <BoothQr /> },
   { path: "e/:eventCode", element: <EventPage /> },
   {
     element: <SiteLayout />,
@@ -44,8 +51,8 @@ export const router = createBrowserRouter([
           { path: "schedule", element: <Schedule /> },
         ],
       },
-      // Built in later phases.
-      { path: "signin", element: <ComingSoon what="Sign-in" /> },
+      { path: "signin", element: <SignIn /> },
+      { path: "dashboard", element: <Dashboard /> },
       { path: "*", element: <NotFound /> },
     ],
   },

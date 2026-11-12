@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, ScrollRestoration } from "react-router";
 import { CONTACT_EMAIL, SITE_NAME } from "@/config";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Wordmark } from "@/components/Wordmark";
+import { useAuth } from "@/features/auth/AuthContext";
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
   `inline-flex min-h-12 items-center px-1 sm:px-2 text-sm whitespace-nowrap no-underline ${
@@ -10,6 +11,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export function SiteLayout() {
+  const { session } = useAuth();
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -31,8 +33,8 @@ export function SiteLayout() {
             <NavLink to="/faq" className={(s) => `${navClass(s)} hidden sm:inline-flex`}>
               FAQ
             </NavLink>
-            <NavLink to="/signin" className={navClass}>
-              Sign in
+            <NavLink to={session ? "/dashboard" : "/signin"} className={navClass}>
+              {session ? "Your letters" : "Sign in"}
             </NavLink>
             <ThemeToggle />
           </nav>

@@ -8,7 +8,9 @@ import { Wordmark } from "@/components/Wordmark";
 import { DraftProvider } from "@/features/draft/DraftContext";
 import { IdleGuard } from "@/features/booth/IdleGuard";
 import { LetterFlow, type Sealed } from "@/features/booth/LetterFlow";
-import { readKiosk } from "@/features/booth/kiosk";
+import { DEV_KIOSK_TOKEN, readKiosk } from "@/features/booth/kiosk";
+import { kioskStatus } from "@/lib/api";
+import { supabaseConfigured } from "@/lib/supabase";
 import { shortDate } from "@/lib/dates";
 import { usePageTitle } from "@/lib/usePageTitle";
 
@@ -24,6 +26,16 @@ export function Booth() {
   const [session, setSession] = useState(0);
   const [started, setStarted] = useState(false);
   const [doc, setDoc] = useState<LegalDoc | null>(null);
+  // Server check: revoked device, or event not running. Re-checked after every attendee.
+  const [device, setDevice] = useState<"ok" | "revoked" | "not_live">("ok");
+  const token = kiosk?.token;
+  useEffect(() => {
+    if (!token || token === DEV_KIOSK_TOKEN || !supabaseConfigured) return;
+    kioskStatus(token).then((r) => {
+      if (!r.ok) return; // offline: let the attendee write; submit will report problems
+      setDevice(!r.usable ? "revoked" : r.live ? "ok" : "not_live");
+    });
+  }, [token, session]);
 
   const reset = useCallback(() => {
     setStarted(false);
@@ -35,12 +47,14 @@ export function Booth() {
     window.scrollTo({ top: 0 });
   }, []);
 
-  if (!kiosk) return <Unregistered />;
+  if (!kiosk || device === "revoked") return <Unregistered revoked={device === "revoked"} />;
 
   return (
-    <BoothShell eventName={kiosk.eventName} dev={kiosk.token === "dev-kiosk"}>
+    <BoothShell eventName={kiosk.eventName} dev={kiosk.token === DEV_KIOSK_TOKEN}>
       <IdleGuard active={started} onTimeout={reset} />
-      {!started ? (
+      {device === "not_live" ? (
+        <NotLive eventName={kiosk.eventName} />
+      ) : !started ? (
         <Welcome onStart={() => setStarted(true)} onDoc={setDoc} />
       ) : (
         <DraftProvider key={session} storageKey={null}>
@@ -133,15 +147,29 @@ function BoothSealed({ sealed, onDone }: { sealed: Sealed; onDone: () => void })
   );
 }
 
-function Unregistered() {
+function Unregistered({ revoked = false }: { revoked?: boolean }) {
   return (
     <div className="mx-auto max-w-[640px] px-4 py-24">
       <Wordmark />
-      <h1 className="mt-12 text-2xl">This device isn't set up as a booth yet.</h1>
+      <h1 className="mt-12 text-2xl">
+        {revoked ? "This booth device has been switched off." : "This device isn't set up as a booth yet."}
+      </h1>
       <p className="mt-6 text-lg text-pencil">
         Event staff: open <strong className="font-semibold text-ink">/booth/setup</strong> on this device
-        and enter the staff PIN.
+        and enter the event code and staff PIN.
       </p>
     </div>
+  );
+}
+
+function NotLive({ eventName }: { eventName: string }) {
+  return (
+    <section className="py-16">
+      <p className="eyebrow">{eventName}</p>
+      <h1 className="mt-4 text-3xl">The booth is closed right now.</h1>
+      <p className="mt-6 max-w-prose text-lg text-pencil">
+        Letters can be written here while the event is running. Please check with the event staff.
+      </p>
+    </section>
   );
 }

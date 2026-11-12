@@ -9,6 +9,6 @@ export const POLICY_VERSION = "2026-11-12";
 export const POLICY_UPDATED_LABEL = "12 November 2026";
 
 export const MAX_LETTER_CHARS = 20_000;
-export const MAX_LETTERS_PER_EMAIL = 3;
+export { MAX_LETTERS_PER_EMAIL } from "@shared/letter.ts";
 export const DELETION_WINDOW_DAYS = 30;
 export const DELIVERED_RETENTION_DAYS = 90;

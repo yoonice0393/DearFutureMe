@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { emailSchema } from "@shared/letter.ts";
 import { Button, ButtonLink } from "@/components/Button";
@@ -8,6 +8,7 @@ import { EmailField } from "@/components/letter/EmailField";
 import { ReviewEmail } from "@/components/letter/ReviewEmail";
 import { SealAnimation } from "@/components/letter/SealAnimation";
 import { POLICY_VERSION } from "@/config";
+import { useAuth } from "@/features/auth/AuthContext";
 import { useDraft } from "@/features/draft/DraftContext";
 import { submitLetter } from "@/lib/api";
 import { customDateError, longDate, resolveDelivery, userTimezone } from "@/lib/dates";
@@ -28,6 +29,11 @@ export function Schedule() {
     update(patch);
     setErrors((e) => (e[key] ? { ...e, [key]: null } : e));
   };
+  // Signed in? Start with the account address (they can still change it).
+  const { email: accountEmail } = useAuth();
+  useEffect(() => {
+    if (accountEmail && !draft.email) update({ email: accountEmail });
+  }, [accountEmail]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (done) return <Submitted done={done} />;
 
@@ -66,6 +72,7 @@ export function Schedule() {
       timezone: userTimezone(),
       consent: true,
       policyVersion: POLICY_VERSION,
+      draftId: draft.serverId,
     });
     setBusy(false);
     if (!res.ok) return setErrors({ review: res.error });

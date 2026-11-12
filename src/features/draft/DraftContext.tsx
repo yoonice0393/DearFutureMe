@@ -12,6 +12,8 @@ export type Draft = {
   consent: boolean;
   /** ISO date the draft was started; shown at the top of the sheet. */
   startedAt: string;
+  /** Signed-in users: id of the encrypted copy saved to their account. */
+  serverId?: string;
 };
 
 export function emptyDraft(): Draft {
