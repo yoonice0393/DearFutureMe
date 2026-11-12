@@ -92,7 +92,7 @@ export function Settings() {
               You sign in with <strong className="font-semibold text-ink [overflow-wrap:anywhere]">{email}</strong>.
             </p>
             <form onSubmit={changeEmail} noValidate className="mt-6 space-y-6">
-              <EmailField value={newEmail} onChange={(v) => { setNewEmail(v); setEmailMsg(null); }} label="New email address"
+              <EmailField value={newEmail} onChange={(v) => { setNewEmail(v); setEmailMsg(null); }} label="New email address" hint="We'll email a confirmation link to the new address."
                 error={emailMsg && !emailMsg.ok ? emailMsg.text : null} />
               <Button type="submit" variant="secondary" disabled={busy === "email"}>Change email</Button>
               {emailMsg?.ok && <p role="status">{emailMsg.text}</p>}

@@ -9,19 +9,21 @@ export function EmailField({
   error,
   large = false,
   label = "Your email address",
+  hint = "We'll send your receipt here now, and your letter on the day.",
 }: {
   value: string;
   onChange: (v: string) => void;
   error?: string | null;
   large?: boolean;
   label?: string;
+  hint?: string;
 }) {
   const [checked, setChecked] = useState(value);
   // Suggest after the person leaves the field (or pauses with a full domain).
   const suggestion = checked ? suggestEmail(checked) : null;
 
   return (
-    <Field label={label} hint="We'll send your receipt here now, and your letter on the day." error={error}>
+    <Field label={label} hint={hint} error={error}>
       {({ id, describedBy, invalid }) => (
         <>
           <input

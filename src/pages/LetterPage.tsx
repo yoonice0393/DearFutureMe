@@ -147,8 +147,8 @@ export function LetterPage() {
         <p>It will be deleted and never sent. This can't be undone.</p>
         <DialogButtons busy={busy} error={dialogError} confirm="Cancel the letter" onConfirm={() => act("cancel")} onClose={() => setDialog(null)} />
       </Modal>
-      <Modal open={dialog === "delete"} onClose={() => setDialog(null)} title="Delete from your archive?">
-        <p>The letter will be permanently deleted. This can't be undone.</p>
+      <Modal open={dialog === "delete"} onClose={() => setDialog(null)} title={status === "draft" ? "Delete this draft?" : "Delete from your archive?"}>
+        <p>{status === "draft" ? "The draft" : "The letter"} will be permanently deleted. This can't be undone.</p>
         <DialogButtons busy={busy} error={dialogError} confirm="Delete permanently" onConfirm={() => act("delete")} onClose={() => setDialog(null)} />
       </Modal>
       <Modal open={dialog === "reschedule"} onClose={() => setDialog(null)} title="Choose a new date" wide>

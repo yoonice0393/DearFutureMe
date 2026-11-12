@@ -62,6 +62,7 @@ export function SignIn() {
         ) : (
           <form onSubmit={send} noValidate className="max-w-[520px] space-y-6">
             <EmailField
+              hint="We'll email you a one-time sign-in link."
               value={email}
               onChange={(v) => {
                 setEmail(v);
