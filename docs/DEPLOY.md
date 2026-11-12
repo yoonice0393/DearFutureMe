@@ -100,10 +100,10 @@ The build writes `dist/_headers` (CSP, HSTS and the other headers) and prerender
 ### After the first deploy
 
 - [x] `SITE_ORIGINS` starts with `https://dearfutureme.pages.dev` (set; re-run `npx supabase secrets set --env-file supabase/.env.secrets` if the address ever changes).
-- [ ] Supabase Auth Site URL and Redirect URLs point at `https://dearfutureme.pages.dev`.
-- [ ] Turnstile widget hostnames include `dearfutureme.pages.dev`.
-- [ ] Open `/booth/setup` on the real site and register a test device, then check `/booth`, `/booth/qr` and a phone scan.
-- [ ] Write a web letter to yourself, confirm it, and check the receipt's links (manage, "This wasn't me").
+- [x] Supabase Auth Site URL and Redirect URLs point at `https://dearfutureme.pages.dev`.
+- [x] Turnstile widget hostnames include `dearfutureme.pages.dev`.
+- [x] Open `/booth/setup` on the real site and register a test device, then check `/booth`, `/booth/qr` and a phone scan.
+- [x] Write a web letter to yourself, confirm it, and check the receipt's links (manage, "This wasn't me").
 - [ ] Response headers: `curl -sI https://<site>/ | findstr /i "content-security strict-transport"`.
 - [ ] Set `DEV_MODE=false` before the real event.
 
@@ -146,7 +146,7 @@ gpg -d backup.sql.gz.gpg | gunzip | psql "<connection string>"
 
 ## Before an event
 
-- [ ] Real Turnstile keys in place (not the `1x000…` test keys).
+- [x] Real Turnstile keys in place (not the `1x000…` test keys).
 - [ ] `DEV_MODE=false`.
 - [ ] Event created in `/admin` with a letter cap that fits the email quota (Brevo free: 300/day, see `docs/LIMITS.md`).
 - [ ] Every booth device registered at `/booth/setup`, and `/booth/qr` open on a screen.
