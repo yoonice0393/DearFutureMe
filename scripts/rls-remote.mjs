@@ -24,7 +24,9 @@ let sql = src
   .replace(/^select \* from finish\(\);$/m, "insert into pg_temp.tap (line) select * from finish();")
   .replace(
     /^rollback;$/m,
-    "reset role;\ndo $$$$ begin raise exception 'TAP_BEGIN%TAP_END', (select string_agg(line, E'\\n' order by n) from pg_temp.tap); end $$$$;",
+    // The query API truncates long error messages, so report compactly: the plan,
+    // a count of passing lines, and every non-passing line in full.
+    "reset role;\ndo $$$$ begin raise exception 'TAP_BEGIN%TAP_END', (select string_agg(line, E'\\n' order by n) from (select n, line from pg_temp.tap where line !~ '^ok ' union all select 1000000, 'PASSED ' || count(*) from pg_temp.tap where line ~ '^ok ') t); end $$$$;",
   );
 
 if (!sql.includes("TAP_BEGIN") || !sql.includes("insert into pg_temp.tap")) {
@@ -57,6 +59,6 @@ const tap = m[1].trim();
 console.log(tap);
 const failed = tap.split("\n").filter((l) => /^not ok/.test(l));
 const planned = /^1\.\.(\d+)/m.exec(tap)?.[1];
-const passed = tap.split("\n").filter((l) => /^ok /.test(l)).length;
+const passed = Number(/^PASSED (\d+)/m.exec(tap)?.[1] ?? 0);
 console.log(`\n${passed}/${planned} passed${failed.length ? `, ${failed.length} FAILED` : ""}. All test data rolled back.`);
 process.exit(failed.length || String(passed) !== planned ? 1 : 0);

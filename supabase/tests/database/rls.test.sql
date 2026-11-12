@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(21);
 
 -- ── Fixtures (as the migration owner) ───────────────────────────────────────
 insert into auth.users (id, email, aud, role)
@@ -24,6 +24,12 @@ values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-00000000000a', 'rls-a@test.invalid', 'hash-a', 'web', '\x00', '\x00', now() + interval '1 year', 'sealed', now()),
   ('00000000-0000-4000-8000-0000000000b1', '00000000-0000-4000-8000-00000000000b', 'rls-b@test.invalid', 'hash-b', 'web', '\x00', '\x00', now() + interval '1 year', 'sealed', now()),
   ('00000000-0000-4000-8000-0000000000c1', null,                                   'booth@test.invalid', 'hash-c', 'web', '\x00', '\x00', now() + interval '1 year', 'sealed', now());
+
+select lives_ok(
+  $$ insert into public.email_outbox (kind, letter_id) values ('receipt', '00000000-0000-4000-8000-0000000000a1'), ('receipt', '00000000-0000-4000-8000-0000000000a1')
+     on conflict (letter_id, kind) do nothing $$,
+  'queueing a receipt twice is a no-op (regression: 42P10 on /verify)'
+);
 
 -- ── As user A ───────────────────────────────────────────────────────────────
 set local role authenticated;

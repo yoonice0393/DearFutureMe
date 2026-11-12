@@ -27,17 +27,22 @@ serve("verify", async (req, raw) => {
     .maybeSingle();
   if (error) throw error;
   if (!letter) throw new HttpError(404, "not_found", "We couldn't find this letter. It may have been cancelled.");
-  if (letter.status !== "pending_verification") {
+  const already = letter.status !== "pending_verification";
+  if (already && letter.status !== "sealed") {
     return { status: letter.status, deliverAt: letter.deliver_at, already: true };
   }
 
-  const { error: upErr } = await db()
-    .from("letters")
-    .update({ status: "sealed" })
-    .eq("id", letter.id)
-    .eq("status", "pending_verification");
-  if (upErr) throw upErr;
+  if (!already) {
+    const { error: upErr } = await db()
+      .from("letters")
+      .update({ status: "sealed" })
+      .eq("id", letter.id)
+      .eq("status", "pending_verification");
+    if (upErr) throw upErr;
+  }
 
+  // Queue the receipt. Idempotent: clicking the link again re-queues a receipt
+  // only if none exists yet (this also repairs letters sealed before a failure).
   const { data: row, error: qErr } = await db()
     .from("email_outbox")
     .upsert({ kind: "receipt", letter_id: letter.id }, { onConflict: "letter_id,kind", ignoreDuplicates: true })
@@ -46,5 +51,5 @@ serve("verify", async (req, raw) => {
   if (qErr) throw qErr;
   if (row?.id) await processOutbox({ id: row.id }).catch(() => undefined); // the cron retries if this fails
 
-  return { status: "sealed", deliverAt: letter.deliver_at, already: false };
+  return { status: "sealed", deliverAt: letter.deliver_at, already };
 });
