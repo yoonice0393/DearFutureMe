@@ -4,6 +4,7 @@ import { Postmark } from "@/components/Postmark";
 import { Stamp } from "@/components/Stamp";
 import { countdown } from "@/lib/countdown";
 import { longDate, shortDate } from "@/lib/dates";
+import { stampLabel } from "@/lib/stamp";
 
 const STATUS: Record<string, { label: string; tone: string } | undefined> = {
   pending_verification: { label: "Confirm your email to seal it", tone: "text-postal border-postal" },
@@ -25,7 +26,7 @@ export function Envelope({
 }) {
   const deliver = deliverAt ? new Date(deliverAt) : null;
   const chip = STATUS[status];
-  const years = deliver ? Math.max(0, deliver.getFullYear() - new Date(writtenAt).getFullYear()) : 0;
+  const stamp = deliver ? stampLabel(new Date(writtenAt), deliver) : "SOON";
 
   return (
     <Link
@@ -38,7 +39,7 @@ export function Envelope({
         <path d="M0 200 L128 110 M320 200 L192 110" className="fill-none stroke-rule" strokeWidth="1" vectorEffect="non-scaling-stroke" />
       </svg>
       <Postmark date={shortDate(new Date(writtenAt))} waves={false} className="absolute left-3 top-3 w-16 -rotate-12 opacity-80 md:w-20" />
-      <Stamp label={years ? `${years} YR` : "SOON"} className="absolute right-3 top-3 w-10 rotate-3 md:w-12" />
+      <Stamp label={stamp} className="absolute right-3 top-3 w-10 rotate-3 md:w-12" />
 
       <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
         {chip && (
