@@ -23,7 +23,9 @@ and "sealing" a letter only pretends to submit. That's useful for UI work.
 | Script | What it does |
 |---|---|
 | `npm run dev` | Dev server |
-| `npm run build` | Type-check and production build into `dist/` |
+| `npm run build` | Type-check, production build into `dist/`, prerender the static pages, and generate `dist/_headers` (CSP etc.) |
+| `node scripts/serve-dist.mjs` | Serve `dist/` like Cloudflare Pages (clean URLs, SPA fallback, `_headers`, compression) on :4174 |
+| `node scripts/lighthouse.mjs http://localhost:4174 / /about` | Lighthouse scores per page (mobile) |
 | `npm test` | Unit tests for encryption, signed tokens and letter rules |
 | `node scripts/rls-remote.mjs` | RLS tests against the linked database, no Docker needed (always rolled back) |
 

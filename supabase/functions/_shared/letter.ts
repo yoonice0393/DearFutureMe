@@ -5,6 +5,9 @@
  */
 import { z } from "zod";
 
+// No eval/new Function: keeps Zod compatible with our strict Content-Security-Policy.
+z.config({ jitless: true });
+
 export const LETTER_MAX_CHARS = 20_000;
 export const SUBJECT_MAX_CHARS = 150;
 export const EMAIL_MAX_CHARS = 254;

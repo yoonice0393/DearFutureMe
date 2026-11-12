@@ -58,7 +58,7 @@ export function Home() {
               you’ve forgotten what that felt like, and that you still call Lola on Sundays.
             </p>
             <p className="mt-[1.65em]">Be gentler with yourself than I am being today.</p>
-            <p className="mt-6 font-hand text-xl text-ink">— me, at 22</p>
+            <p className="mt-6 font-hand text-xl italic text-ink">— me, at 22</p>
           </div>
           <Stamp label="1 YEAR" className="absolute -top-4 right-3 w-12 rotate-3 md:right-8 md:w-20" />
           <Postmark

@@ -1,11 +1,10 @@
-import { useState } from "react";
-
-function readDark() {
-  return document.documentElement.classList.contains("dark");
-}
+import { useEffect, useState } from "react";
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(readDark);
+  // Start as "light" so the first render matches the prerendered HTML (which has
+  // no idea of the visitor's theme), then sync with the class set by theme-init.js.
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
 
   function toggle() {
     const next = !dark;

@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/features/auth/AuthContext";
 import { claimLetters } from "@/lib/api";
 import { longDate } from "@/lib/dates";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { usePageTitle } from "@/lib/usePageTitle";
 
 type Row = { id: string; status: string; deliver_at: string | null; created_at: string; delivered_at: string | null; updated_at: string };
@@ -23,6 +23,7 @@ export function Dashboard() {
   const claimedOnce = useRef(false);
 
   const load = useCallback(async () => {
+    const supabase = await getSupabase();
     if (!supabase) return;
     const { data, error: err } = await supabase
       .from("letters")

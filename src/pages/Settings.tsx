@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { EmailField } from "@/components/letter/EmailField";
 import { useAuth } from "@/features/auth/AuthContext";
 import { deleteMyAccount, exportMyData, retargetLetters } from "@/lib/api";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { usePageTitle } from "@/lib/usePageTitle";
 
 export function Settings() {
@@ -33,7 +33,7 @@ export function Settings() {
     if (!parsed.success) return setEmailMsg({ ok: false, text: parsed.error.issues[0].message });
     if (parsed.data === email) return setEmailMsg({ ok: false, text: "That's already your address." });
     setBusy("email");
-    const { error } = await supabase!.auth.updateUser({ email: parsed.data }, { emailRedirectTo: `${location.origin}/settings` });
+    const { error } = await (await getSupabase())!.auth.updateUser({ email: parsed.data }, { emailRedirectTo: `${location.origin}/settings` });
     setBusy(null);
     setEmailMsg(
       error

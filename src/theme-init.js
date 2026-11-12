@@ -1,0 +1,1 @@
+var h=document.documentElement;try{if(localStorage.getItem("dfm-theme")==="dark")h.classList.add("dark")}catch(e){}if(h.getAttribute("data-prerendered")!==(location.pathname.replace(/\/+$/,"")||"/"))h.classList.add("not-prerendered")

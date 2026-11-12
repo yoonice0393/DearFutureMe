@@ -47,7 +47,8 @@ export default {
     fontFamily: {
       serif: ['"Fraunces Variable"', "Georgia", "serif"],
       sans: ['"IBM Plex Sans"', "system-ui", "sans-serif"],
-      hand: ['"Caveat"', "cursive"],
+      // Signature accent: the serif in italic (the separate handwriting font cost 50 KB).
+      hand: ['"Fraunces Variable"', "Georgia", "serif"],
     },
     fontSize: {
       xs: ["14px", { lineHeight: "20px" }],

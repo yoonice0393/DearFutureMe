@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /booth
+Disallow: /e/
+Disallow: /manage/
+Disallow: /verify
+Disallow: /letter/
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /admin

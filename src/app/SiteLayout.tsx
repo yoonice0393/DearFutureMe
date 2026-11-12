@@ -11,7 +11,7 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
   }`;
 
 export function SiteLayout() {
-  const { session } = useAuth();
+  const { likelySignedIn } = useAuth();
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -33,8 +33,8 @@ export function SiteLayout() {
             <NavLink to="/faq" className={(s) => `${navClass(s)} hidden sm:inline-flex`}>
               FAQ
             </NavLink>
-            <NavLink to={session ? "/dashboard" : "/signin"} className={navClass}>
-              {session ? "Your letters" : "Sign in"}
+            <NavLink to={likelySignedIn ? "/dashboard" : "/signin"} className={navClass}>
+              {likelySignedIn ? "Your letters" : "Sign in"}
             </NavLink>
             <ThemeToggle />
           </nav>

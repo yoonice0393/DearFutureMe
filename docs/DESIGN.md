@@ -61,7 +61,7 @@ Implemented as CSS variables (`--c-paper` etc.) on `:root` and `.dark`, and refe
 ## Typography
 - **Headings:** Fraunces (variable, opsz + wght), self-hosted woff2. Weights 400–600; letterforms with a soft "WONK" axis off.
 - **UI and body:** IBM Plex Sans, 400 / 500 / 600, self-hosted.
-- **Accent (signature only):** Caveat, used at most once per screen (the "— me" sign-off, postmark handwriting). Never for body text.
+- **Accent (signature only):** Fraunces in italic (`font-hand italic`), used at most once per screen. A separate handwriting font was dropped to save 50 KB on mobile.
 - Self-hosted via `@fontsource` packages so no request goes to Google.
 
 ### Type scale

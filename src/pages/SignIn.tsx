@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate } from "react-router";
 
 import { emailSchema } from "@shared/letter.ts";
 import { Button } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
+import { Turnstile, type TurnstileHandle } from "@/components/Turnstile";
 import { EmailField } from "@/components/letter/EmailField";
 import { useAuth } from "@/features/auth/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { usePageTitle } from "@/lib/usePageTitle";
 
 export function SignIn() {
@@ -16,6 +17,10 @@ export function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Passed to Supabase Auth, which checks it once CAPTCHA protection is enabled
+  // in the dashboard (Authentication → Attack Protection → Turnstile).
+  const [botToken, setBotToken] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
 
   if (session) return <Navigate to="/dashboard" replace />;
 
@@ -23,14 +28,20 @@ export function SignIn() {
     e.preventDefault();
     const parsed = emailSchema.safeParse(email);
     if (!parsed.success) return setError(parsed.error.issues[0].message);
+    const supabase = await getSupabase();
     if (!supabase) return setError("Sign-in isn't set up yet on this copy of the site.");
     setBusy(true);
     setError(null);
     const { error: err } = await supabase.auth.signInWithOtp({
       email: parsed.data,
-      options: { emailRedirectTo: `${location.origin}/dashboard`, shouldCreateUser: true },
+      options: {
+        emailRedirectTo: `${location.origin}/dashboard`,
+        shouldCreateUser: true,
+        captchaToken: botToken ?? undefined,
+      },
     });
     setBusy(false);
+    turnstile.current?.reset();
     if (err) {
       setError(
         err.status === 429
@@ -61,6 +72,7 @@ export function SignIn() {
           </Button>
         ) : (
           <form onSubmit={send} noValidate className="max-w-[520px] space-y-6">
+            <Turnstile ref={turnstile} onToken={setBotToken} action="signin" />
             <EmailField
               hint="We'll email you a one-time sign-in link."
               value={email}

@@ -32,7 +32,8 @@ const lines = [
   "# MAIL_FROM_NAME=DearFutureMe",
   "# ADMIN_EMAIL=   (monthly status email; defaults to MAIL_FROM_EMAIL)",
   "# RESEND_API_KEY=",
-  "# TURNSTILE_SECRET_KEY=",
+  "# Cloudflare test secret (always passes) until real keys exist:",
+  "TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA",
   "",
 ];
 writeFileSync(path, lines.join("\n"), { mode: 0o600 });

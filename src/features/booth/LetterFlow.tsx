@@ -10,6 +10,7 @@ import { EmailField } from "@/components/letter/EmailField";
 import { LetterPreview } from "@/components/letter/LetterPreview";
 import { ReviewEmail } from "@/components/letter/ReviewEmail";
 import { SealAnimation } from "@/components/letter/SealAnimation";
+import { Turnstile, type TurnstileHandle } from "@/components/Turnstile";
 import { POLICY_VERSION } from "@/config";
 import { useDraft } from "@/features/draft/DraftContext";
 import { submitLetter } from "@/lib/api";
@@ -51,6 +52,8 @@ export function LetterFlow({
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
   const [sealed, setSealed] = useState<Sealed | null>(null);
+  const [botToken, setBotToken] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const large = mode === "booth";
 
@@ -110,8 +113,11 @@ export function LetterFlow({
       policyVersion: POLICY_VERSION,
       kioskToken,
       eventCode,
+      // Phones at events get an invisible Turnstile check; booth devices skip it.
+      turnstileToken: botToken ?? undefined,
     });
     setBusy(false);
+    turnstile.current?.reset();
     if (!res.ok) {
       setErrors({ review: res.error });
       return;
@@ -137,6 +143,7 @@ export function LetterFlow({
   const stepIndex = ORDER.indexOf(step);
   return (
     <div>
+      {mode === "event" && <Turnstile ref={turnstile} onToken={setBotToken} action="event" />}
       <ol aria-label="Steps" className="flex flex-wrap gap-x-6 gap-y-2 text-xs uppercase tracking-[0.12em]">
         {ORDER.map((s, i) => (
           <li key={s} aria-current={s === step ? "step" : undefined} className={i === stepIndex ? "font-semibold text-postal" : i < stepIndex ? "text-ink" : "text-pencil"}>

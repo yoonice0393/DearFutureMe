@@ -91,7 +91,7 @@ export function About() {
         <aside aria-hidden="true" className="hidden md:col-span-4 md:col-start-9 md:block">
           <div className="sticky top-8">
             <Postmark date="Delivered" waves={false} className="w-40 rotate-6" />
-            <p className="mt-6 font-hand text-xl text-pencil">
+            <p className="mt-6 font-hand text-xl italic text-pencil">
               “Written on a Tuesday, opened on a Friday, two years later.”
             </p>
           </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { emailSchema } from "@shared/letter.ts";
 import { Button, ButtonLink } from "@/components/Button";
@@ -7,6 +7,7 @@ import { DeliveryPicker } from "@/components/letter/DeliveryPicker";
 import { EmailField } from "@/components/letter/EmailField";
 import { ReviewEmail } from "@/components/letter/ReviewEmail";
 import { SealAnimation } from "@/components/letter/SealAnimation";
+import { Turnstile, turnstileEnabled, type TurnstileHandle } from "@/components/Turnstile";
 import { POLICY_VERSION } from "@/config";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useDraft } from "@/features/draft/DraftContext";
@@ -23,6 +24,8 @@ export function Schedule() {
   const [reviewing, setReviewing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<Done | null>(null);
+  const [botToken, setBotToken] = useState<string | null>(null);
+  const turnstile = useRef<TurnstileHandle>(null);
 
   const deliverAt = resolveDelivery(draft.delivery);
   const setField = (key: string, patch: Parameters<typeof update>[0]) => {
@@ -63,6 +66,9 @@ export function Schedule() {
 
   async function seal() {
     if (!deliverAt) return setReviewing(false);
+    if (turnstileEnabled && !botToken) {
+      return setErrors({ review: "One moment: we're checking you're not a bot. Try again in a few seconds." });
+    }
     setBusy(true);
     const res = await submitLetter({
       subject: draft.subject,
@@ -73,8 +79,10 @@ export function Schedule() {
       consent: true,
       policyVersion: POLICY_VERSION,
       draftId: draft.serverId,
+      turnstileToken: botToken ?? undefined,
     });
     setBusy(false);
+    turnstile.current?.reset(); // tokens are single-use
     if (!res.ok) return setErrors({ review: res.error });
     const result: Done = { email: draft.email, arrives: longDate(new Date(res.deliverAt)), status: res.status };
     wipe();
@@ -84,6 +92,8 @@ export function Schedule() {
 
   return (
     <div className="mx-auto max-w-page px-4 pb-12 pt-8 md:px-8 md:pt-12">
+      {/* Stays mounted across the form and review screens so its token survives. */}
+      <Turnstile ref={turnstile} onToken={setBotToken} action="letter" />
       <p className="eyebrow">Step 2 of 2</p>
       {reviewing ? (
         <div className="mt-6 max-w-[720px]">
@@ -111,7 +121,6 @@ export function Schedule() {
             <div className="space-y-6 border-t border-rule pt-12">
               <EmailField value={draft.email} onChange={(email) => setField("email", { email })} error={errors.email} />
               <ConsentField checked={draft.consent} onChange={(consent) => setField("consent", { consent })} error={errors.consent} />
-              {/* Turnstile widget goes here (Phase 7). */}
             </div>
             <div className="flex flex-wrap items-center gap-3 border-t border-rule pt-6">
               <Button type="submit">Review and seal</Button>

@@ -167,3 +167,8 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Prerendered markup is only shown on the URL it was rendered for (see src/theme-init.js). */
+.not-prerendered [data-prerender] {
+  display: none;
+}

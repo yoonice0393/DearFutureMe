@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/features/auth/AuthContext";
 import { adminCreateEvent, adminOverview, adminPauseEvent, adminRetryFailed, adminRevokeKiosk, type AdminOverview } from "@/lib/api";
 import { longDate } from "@/lib/dates";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import { usePageTitle } from "@/lib/usePageTitle";
 
 const dt = (s: string) => new Date(s).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -30,12 +30,14 @@ export function Admin() {
   }, []);
 
   useEffect(() => {
-    if (!session || !supabase) return;
-    supabase.from("profiles").select("role").single().then(({ data: p }) => {
-      const admin = p?.role === "admin";
-      setIsAdmin(admin);
-      if (admin) load();
-    });
+    if (!session) return;
+    getSupabase()
+      .then((sb) => sb?.from("profiles").select("role").single())
+      .then((res) => {
+        const admin = res?.data?.role === "admin";
+        setIsAdmin(admin);
+        if (admin) load();
+      });
   }, [session, load]);
 
   if (loading) return <p className="mx-auto max-w-page px-4 py-24 text-pencil md:px-8">Loading…</p>;

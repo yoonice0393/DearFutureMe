@@ -1,18 +1,19 @@
-import { FunctionsHttpError } from "@supabase/supabase-js";
-
 import { letterSubmitSchema, type LetterSubmit } from "@shared/letter.ts";
-import { supabase, supabaseConfigured } from "./supabase";
+import { getSupabase, supabaseConfigured } from "./supabase";
 
 export type ApiError = { ok: false; error: string; code?: string; field?: string };
 export type ApiResult<T> = ({ ok: true } & T) | ApiError;
 
 async function call<T>(fn: string, body: Record<string, unknown>): Promise<ApiResult<T>> {
+  const supabase = await getSupabase();
   if (!supabase) return { ok: false, code: "not_configured", error: "The server isn't set up yet." };
   const { data, error } = await supabase.functions.invoke(fn, { body });
   if (!error) return data as ApiResult<T>;
-  if (error instanceof FunctionsHttpError) {
+  // FunctionsHttpError carries the Response (checked by shape, so supabase-js stays lazy).
+  const context = (error as { context?: unknown }).context;
+  if (context instanceof Response) {
     try {
-      const payload = (await error.context.json()) as ApiError;
+      const payload = (await context.json()) as ApiError;
       return { ...payload, ok: false };
     } catch {
       /* fall through */
