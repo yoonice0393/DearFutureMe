@@ -108,3 +108,36 @@ export const manageView = (token: string) => call<ManageView>("manage", { token,
 
 export const manageAction = (token: string, action: "cancel" | "not-me" | "unsubscribe" | "send-now") =>
   call<{ done: boolean; removed?: number; status?: string; error?: string | null }>("manage", { token, action });
+
+// ── Signed-in owner ──────────────────────────────────────────────────────────
+
+export const claimLetters = () => call<{ claimed: number }>("my-letters", { action: "claim" });
+export const cancelMyLetter = (id: string) => call<{ done: boolean }>("my-letters", { action: "cancel", id });
+export const deleteMyLetter = (id: string) => call<{ done: boolean }>("my-letters", { action: "delete", id });
+export const rescheduleMyLetter = (id: string, deliverAt: string) =>
+  call<{ done: boolean; deliverAt: string }>("my-letters", { action: "reschedule", id, deliverAt });
+
+export type ExportData = { exportedAt: string; account: Record<string, unknown>; letters: Record<string, unknown>[] };
+export const exportMyData = () => call<ExportData>("account", { action: "export" });
+export const retargetLetters = () => call<{ updated: number }>("account", { action: "retarget" });
+export const deleteMyAccount = () => call<{ deleted: boolean }>("account", { action: "delete", confirm: "DELETE" });
+
+// ── Staff ────────────────────────────────────────────────────────────────────
+
+export type AdminOverview = {
+  events: {
+    event_id: string; name: string; slug: string; starts_at: string; ends_at: string; paused: boolean;
+    submission_cap: number; static_code_cap: number; letters: number; booth: number; phone: number; via_static: number;
+  }[];
+  kiosks: { kiosk_id: string; event_id: string; label: string | null; active: boolean; created_at: string; revoked_at: string | null; letters: number }[];
+  queue: Record<string, number>;
+  failed: { id: string; attempts: number; last_error: string | null; deliver_at: string; source: string }[];
+  quotaToday: { provider: string; used: number }[];
+};
+export const adminOverview = () => call<AdminOverview>("admin", { action: "overview" });
+export const adminCreateEvent = (e: { name: string; slug: string; startsAt: string; endsAt: string; pin: string; cap: number; staticCap: number }) =>
+  call<{ eventId: string }>("admin", { action: "create-event", ...e });
+export const adminPauseEvent = (eventId: string, paused: boolean) => call<{ done: boolean }>("admin", { action: "pause-event", eventId, paused });
+export const adminRevokeKiosk = (kioskId: string, cancelLetters: boolean) =>
+  call<{ cancelled: number }>("admin", { action: "revoke-kiosk", kioskId, cancelLetters });
+export const adminRetryFailed = (id: string) => call<{ done: boolean }>("admin", { action: "retry-failed", id });

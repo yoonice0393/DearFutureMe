@@ -471,3 +471,15 @@ import_map = "./functions/import_map.json"
 [functions.unsubscribe]
 verify_jwt = false
 import_map = "./functions/import_map.json"
+
+[functions.my-letters]
+verify_jwt = false
+import_map = "./functions/import_map.json"
+
+[functions.account]
+verify_jwt = false
+import_map = "./functions/import_map.json"
+
+[functions.admin]
+verify_jwt = false
+import_map = "./functions/import_map.json"
