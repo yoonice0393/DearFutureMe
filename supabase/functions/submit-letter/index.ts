@@ -50,7 +50,8 @@ serve("submit-letter", async (req, raw) => {
   if (input.kioskToken) {
     // ── Booth device ───────────────────────────────────────────────────────
     const kiosk = await lookupKiosk(input.kioskToken);
-    if (!kiosk || !kiosk.usable) throw new HttpError(403, "kiosk_inactive", ERRORS.kiosk_inactive[1]);
+    if (!kiosk) throw new HttpError(403, "kiosk_unknown", "This device isn't registered as a booth. Staff: open /booth/setup.");
+    if (!kiosk.usable) throw new HttpError(403, "kiosk_inactive", ERRORS.kiosk_inactive[1]);
     if (!eventIsLive(kiosk)) throw new HttpError(403, "event_closed", ERRORS.event_closed[1]);
     await rateLimit("kiosk", kiosk.kiosk_id, 60, 6, "This booth is sending letters too quickly. Please wait a moment.");
     source = "booth";
