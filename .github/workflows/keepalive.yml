@@ -1,0 +1,40 @@
+# Daily ping so the free Supabase project never pauses (7 days without traffic
+# pauses it, and paused projects stop delivering letters). If the call fails,
+# GitHub emails the repository owner about the failed run.
+#
+# Repository secrets needed (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL              https://<project-ref>.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  the sb_publishable_… key (public, but kept out of the repo)
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "23 1 * * *" # 09:23 Manila, every day
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call the health function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Set the SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY repository secrets."
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            body=$(curl -sS --max-time 30 -X POST "$SUPABASE_URL/functions/v1/health" \
+              -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" -d '{}') || true
+            echo "attempt $attempt: $body"
+            if echo "$body" | grep -q '"ok":true'; then exit 0; fi
+            sleep 20
+          done
+          echo "::error::Supabase health check failed. The project may be paused: restore it in the Supabase dashboard."
+          exit 1

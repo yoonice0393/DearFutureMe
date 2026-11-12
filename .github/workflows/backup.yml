@@ -1,0 +1,57 @@
+# Weekly database backup (the free Supabase plan has none).
+# The dump is encrypted with a passphrase BEFORE it is stored, because it holds
+# email addresses. Letter content inside it is already AES-encrypted with
+# LETTER_KEY, which is never stored here: keep your own offline copy of it.
+# Artifacts are kept 30 days, matching the Privacy Policy's deletion window.
+#
+# Repository secrets needed:
+#   SUPABASE_DB_URL     Session pooler connection string (Supabase → Connect →
+#                       Session pooler), with the database password filled in.
+#                       GitHub runners have no IPv6, so the direct host won't work.
+#   BACKUP_PASSPHRASE   long random passphrase; store it in your password manager
+#
+# Restore:  gpg -d backup.sql.gz.gpg | gunzip | psql "<connection string>"
+name: Weekly database backup
+
+on:
+  schedule:
+    - cron: "41 18 * * 0" # Monday 02:41 Manila
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump, compress and encrypt
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::error::Set the SUPABASE_DB_URL and BACKUP_PASSPHRASE repository secrets."
+            exit 1
+          fi
+          set -o pipefail
+          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" --no-owner --no-privileges \
+            --schema=public --schema=auth \
+            | gzip -9 \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$PASSPHRASE" -o backup.sql.gz.gpg
+          ls -lh backup.sql.gz.gpg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dearfutureme-db-${{ github.run_id }}
+          path: backup.sql.gz.gpg
+          retention-days: 30
+          if-no-files-found: error

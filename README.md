@@ -5,7 +5,7 @@ Built for event booths (shared kiosks and attendees' phones) as well as the open
 
 - **Frontend:** React + Vite + TypeScript + Tailwind (`src/`)
 - **Backend:** Supabase Postgres + Auth + Edge Functions (`supabase/`)
-- **Design system:** `docs/DESIGN.md` · **Free-tier limits:** `docs/LIMITS.md`
+- **Design system:** `docs/DESIGN.md` · **Free-tier limits:** `docs/LIMITS.md` · **Deploying:** `docs/DEPLOY.md`
 
 ## Local setup
 
