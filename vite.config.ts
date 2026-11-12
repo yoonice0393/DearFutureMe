@@ -13,6 +13,8 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
  *    that names the real Supabase origin and allows our one inline script by
  *    its SHA-256 hash (no 'unsafe-inline'). `vite preview` serves the same file.
  */
+const THEME_PLACEHOLDER = /<!-- dfm:theme-init[^>]*-->/;
+
 function deferredBootAndHeaders(env: Record<string, string>): Plugin {
   const themeScript = readFileSync(new URL("./src/theme-init.js", import.meta.url), "utf8").trim();
   const supabase = env.VITE_SUPABASE_URL ? new URL(env.VITE_SUPABASE_URL).origin : "";
@@ -89,7 +91,7 @@ function deferredBootAndHeaders(env: Record<string, string>): Plugin {
         // Dev server: keep Vite's normal module loading, just inline the theme script.
         const main = /<script type="module" crossorigin src="([^"]+)"><\/script>\s*/.exec(html);
         if (!main) {
-          return html.replace('<script src="/theme-init.js"></script>', `<script>${themeScript}</script>`);
+          return html.replace(THEME_PLACEHOLDER, `<script>${themeScript}</script>`);
         }
         const loader =
           `(function(){var s=document.createElement("script");s.type="module";s.src=${JSON.stringify(main[1])};` +
@@ -98,7 +100,7 @@ function deferredBootAndHeaders(env: Record<string, string>): Plugin {
         return html
           .replace(main[0], "")
           .replace(/<link rel="modulepreload"[^>]*>\s*/g, "")
-          .replace('<script src="/theme-init.js"></script>', `<script>${themeScript};${loader}</script>`);
+          .replace(THEME_PLACEHOLDER, `<script>${themeScript};${loader}</script>`);
       },
     },
     writeBundle() {
